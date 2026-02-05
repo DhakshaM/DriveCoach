@@ -21,7 +21,7 @@ _registry = TripRegistry(TRIPS_ROOT)
 MAX_SEGMENTS = 15
 def build_coach_view():
     with gr.Column(elem_classes=["fixed-width-container"]):
-        gr.Markdown("## Fleet Manager Dashboard", elem_classes=["center-header_coach"])
+        gr.Markdown("## Manager Dashboard", elem_classes=["center-header_coach"])
         gr.Markdown("---")
         
         driver_dd = gr.Dropdown(
