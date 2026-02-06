@@ -388,3 +388,4 @@ def build_driver_view():
     )
 
     return refresh_state, logout_btn
+    
