@@ -8,7 +8,8 @@ DriveCoach AI is a real-time intelligent driving behavior monitoring platform de
 
 The platform supports role-based access for Drivers and Coaches, enabling structured performance monitoring, real-time corrective feedback, and long-term behavioral improvement.
 
----
+
+
 
 ## 1. Overview
 
@@ -24,7 +25,8 @@ DriveCoach AI integrates:
 **Objective:**
 To proactively reduce unsafe driving behavior by delivering real-time corrective feedback to drivers while equipping coaches with structured performance insights.
 
----
+
+
 
 ## 2. Key Features
 
@@ -58,7 +60,8 @@ To proactively reduce unsafe driving behavior by delivering real-time corrective
 * Non-blocking threaded execution
 * Lock-based concurrency control
 
----
+
+
 
 ## 3. Technical Design Considerations
 
