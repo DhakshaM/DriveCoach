@@ -57,7 +57,7 @@ def build_coach_view():
 
     def refresh_status(driver_id):
         if not driver_id:
-            return gr.update(value="Select a driver to view details.")
+            return gr.update(value="Select a driver")
 
         info = get_driver_status(driver_id)
         if not info:
