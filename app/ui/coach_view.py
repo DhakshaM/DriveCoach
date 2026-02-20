@@ -196,7 +196,19 @@ def build_coach_view():
         outputs=segment_dd,
         show_progress=False
     )
-    
+    segment_dd.change(
+        fn=show_selected_segment_severity,
+        inputs=[driver_dd, trip_dd, segment_dd],
+        outputs=segment_severity_box,
+        show_progress=False
+    )
+
+    analyze_btn.click(
+        fn=run_analysis,
+        inputs=[driver_dd, trip_dd, segment_dd],
+        outputs=output_box,
+        show_progress= False
+    )
 
     logout_btn = gr.Button("Logout", elem_classes=["logout-btn"])
 
