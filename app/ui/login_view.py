@@ -70,7 +70,12 @@ def build_login_view():
         outputs=[user_id_state, role_state, error_box],
         show_progress=False
     )
-
+    password_box.submit(
+        fn=do_login,
+        inputs=[username_box, password_box],
+        outputs=[user_id_state, role_state, error_box],
+        show_progress=False
+    )
     
     
     return user_id_state, role_state, username_box, password_box, error_box
