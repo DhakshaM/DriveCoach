@@ -1,4 +1,3 @@
-# Fleet Management LLM Dashboard – Gradio App
 LLM-powered driving behavior analysis using sensor data.
 
 ## File Structure:
