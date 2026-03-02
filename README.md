@@ -11,6 +11,9 @@ The platform supports role-based access for Drivers and Coaches, enabling struct
 
 
 
+
+
+
 ## 1. Overview
 
 DriveCoach AI integrates:
@@ -24,6 +27,8 @@ DriveCoach AI integrates:
 
 **Objective:**
 To proactively reduce unsafe driving behavior by delivering real-time corrective feedback to drivers while equipping coaches with structured performance insights.
+
+
 
 
 
