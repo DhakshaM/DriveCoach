@@ -7,11 +7,11 @@ def reset_login_fields():
         gr.update(visible=True),   # login_col
         gr.update(visible=False),  # driver_col
         gr.update(visible=False),  # coach_col
-        0,                          # driver_refresh_state
-        0,                          # coach_refresh_state
-        "",                         # username_box
-        "",                         # password_box
-        None                        # error_box
+        0,                         # driver_refresh_state
+        0,                         # coach_refresh_state
+        "",                        # username_box
+        "",                        # password_box
+        None                       # error_box
     )
 
 
@@ -89,9 +89,11 @@ def build_login_view():
 # LOGIN VIEW MODULE — COMMENTS / DOCUMENTATION
 # ================================================================
 
+
 # File Purpose:
 # This module builds the Login UI for DriveCoach AI using Gradio.
 # It handles user authentication and role-based access initialization.
+
 
 # UI Components:
 # - Title & subtitle (Branding: DriveCoach AI)
@@ -100,10 +102,12 @@ def build_login_view():
 # - Login Button
 # - Error Message Box (hidden by default)
 
+
 # State Variables:
 # - user_id_state: Stores authenticated user ID
 # - role_state: Stores user role (e.g., driver, coach)
 # - error_box: Displays authentication errors dynamically
+
 
 # Authentication Flow:
 # 1. User enters username & password
@@ -117,11 +121,13 @@ def build_login_view():
 #       - Hide error box
 #       - Return user_id and role
 
+
 # Event Triggers:
 # - login_btn.click()
 # - username_box.submit()  (press Enter)
 # - password_box.submit()  (press Enter)
 # All trigger do_login() for seamless UX.
+
 
 # reset_login_fields():
 # Utility function to:
@@ -131,12 +137,15 @@ def build_login_view():
 # - Reset refresh states
 # - Hide error messages
 
+
 # Security Notes:
 # - Password field uses type="password" for masking
 # - Authentication logic handled in backend.auth.auth_service
 # - No password stored in UI state
 
+
 # Designed For:
 # DriveCoach AI — AI-Driven Coaching for Enhanced Road Safety
 # Provides secure entry point before accessing Driver/Coach dashboards.
+
 # ================================================================
