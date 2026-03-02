@@ -68,12 +68,12 @@ To proactively reduce unsafe driving behavior by delivering real-time corrective
 ### Concurrency Handling
 
 * Non-blocking lock mechanism ensures controlled LLM access
-* `try/finally` pattern guarantees lock release
+* try/finally pattern guarantees lock release
 * Daemon threads prevent UI freezing
 
 ### State Management
 
-* UI-level state handled via `gr.State`
+* UI-level state handled via global_State
 * Critical results stored in module-level dictionaries to prevent state duplication
 * Global session state maintained for authenticated users
 
