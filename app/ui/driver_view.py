@@ -388,3 +388,84 @@ def build_driver_view():
     )
 
     return refresh_state, logout_btn
+    
+
+
+
+
+# ================================================================
+# DRIVER DASHBOARD MODULE — COMMENTS / DOCUMENTATION
+# ================================================================
+
+# File Purpose:
+# This module builds the Driver Dashboard UI using Gradio.
+# It streams trip segments in real-time and generates AI-based
+# coaching feedback per segment using an LLM engine.
+
+# Core Workflow:
+# 1. Driver clicks "Start Trip"
+# 2. System loads trip data and segment severities
+# 3. For each segment:
+#       - Build LLM summary
+#       - Call get_coaching_feedback()
+#       - Store result in _segment_results
+# 4. UI auto-advances every STREAM_INTERVAL_SEC seconds
+# 5. High/Critical severity triggers:
+#       - Audio alert (Web Audio API)
+#       - Red warning banner
+# 6. Feedback + metadata logged to DB via log_driver_response()
+
+# Threading & Concurrency:
+# - _llm_lock ensures only one LLM call runs at a time
+# - Non-blocking lock prevents UI freezing
+# - try/finally guarantees lock release
+# - Each LLM call runs in a daemon thread
+
+# State Management:
+# - gr.State used for UI-level state
+# - _segment_results (module-level dict) prevents Gradio state copy issues
+# - Keyed by (driver_id, trip_id, segment_index)
+
+# Alert Logic:
+# ALERT_SEVERITIES = {"high", "critical"}
+# If severity matches:
+#   - Programmatic beep (880 Hz sine wave)
+#   - Temporary red floating banner
+#   - Auto-dismiss after 4 seconds
+
+# Streaming Control:
+# STREAM_INTERVAL_SEC = 10.0
+# Controlled via gr.Timer().tick()
+# Each tick attempts to:
+#   - Display completed segment feedback
+#   - Pre-fetch next segment LLM result
+
+# Important Functions:
+# - start_llm_for_segment()
+#       Handles async LLM call and DB logging
+# - start_streaming()
+#       Initializes trip session
+# - advance_segment_stream()
+#       Moves segment pointer forward
+# - stop_streaming()
+#       Stops trip session
+# - reset_driver_view()
+#       Resets UI and state
+
+# Safety & Fault Tolerance:
+# - Non-fatal DB write errors are caught
+# - Lock always released
+# - Graceful fallback when no trips or no driver ID
+
+# Designed For:
+# DriveCoach AI — AI-Driven Coaching for Enhanced Road Safety
+# Real-time behavioral monitoring with proactive driver alerts
+# ================================================================
+
+
+
+
+
+
+
+

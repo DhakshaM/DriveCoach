@@ -226,3 +226,329 @@ def create_app():
 
 
     return app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ================================================================
+# MAIN APPLICATION MODULE — COMMENTS / DOCUMENTATION
+# ================================================================
+
+# File Purpose:
+# This is the main entry point of the DriveCoach AI application.
+# It:
+#   - Loads the LLM once at startup
+#   - Applies global CSS styling
+#   - Builds Login, Driver, and Coach views
+#   - Handles routing between views
+#   - Manages logout and global state resets
+
+# ------------------------------------------------
+# LLM Initialization
+# ------------------------------------------------
+# load_llm_once() ensures the Large Language Model
+# is loaded only once during app startup to:
+#   - Reduce latency
+#   - Avoid repeated heavy model loading
+#   - Improve performance
+
+# ------------------------------------------------
+# Custom CSS Styling
+# ------------------------------------------------
+# custom_css:
+#   - Applies gradient background
+#   - Adds modern glassmorphism container
+#   - Styles buttons with hover animation
+#   - Fixes container width (500px)
+#   - Hides default Gradio footer
+#   - Adds dashboard fade-in animation
+#   - Creates consistent branding for:
+#         Login
+#         Driver Dashboard
+#         Coach Dashboard
+
+# ------------------------------------------------
+# route_after_login()
+# ------------------------------------------------
+# Handles role-based navigation after login.
+# Steps:
+#   1. Store user_id and role in global_state
+#   2. If role == "driver":
+#         - Trigger GLOBAL_STATE.driver_login()
+#         - Show driver dashboard
+#   3. If role == "coach":
+#         - Show coach dashboard
+#   4. Otherwise:
+#         - Return to login view
+#
+# Returns:
+#   Visibility updates for:
+#       - login_col
+#       - driver_col
+#       - coach_col
+#   Also triggers refresh states.
+
+# ------------------------------------------------
+# logout()
+# ------------------------------------------------
+# Handles secure logout:
+#   - Calls GLOBAL_STATE.driver_logout() if driver
+#   - Clears global_state user_id and role
+#   - Returns (None, None) to reset user_id_state and role_state
+#
+# Used by both driver and coach dashboards.
+
+# ------------------------------------------------
+# create_app()
+# ------------------------------------------------
+# Builds the full Gradio application using Blocks.
+#
+# Structure:
+#   - login_col   → Login UI
+#   - driver_col  → Driver Dashboard UI
+#   - coach_col   → Coach Dashboard UI
+#
+# Visibility is controlled dynamically based on role.
+
+# Event Wiring:
+#   role_state.change() → routes user after login
+#   driver_logout_btn.click() → logout + reset login fields
+#   coach_logout_btn.click() → logout + reset login fields
+#
+# Logout uses:
+#   (*logout(), *reset_login_fields())
+# to reset:
+#   - States
+#   - UI visibility
+#   - Username & password fields
+#   - Error messages
+
+# ------------------------------------------------
+# Global State Management
+# ------------------------------------------------
+# global_state:
+#   Stores current_user_id and current_role
+#
+# GLOBAL_STATE:
+#   Backend session controller for:
+#       - driver_login()
+#       - driver_logout()
+
+# ------------------------------------------------
+# Architecture Summary
+# ------------------------------------------------
+# This file acts as:
+#   → UI Router
+#   → App Bootstrapper
+#   → Global State Coordinator
+#
+# It connects:
+#   UI Layer  ↔  Backend Auth  ↔  Driver/Coach Dashboards  ↔  LLM Engine
+
+# ------------------------------------------------
+# Project:
+# DriveCoach AI
+# AI-Driven Coaching for Enhanced Road Safety
+# ================================================================
