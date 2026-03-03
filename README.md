@@ -1,5 +1,3 @@
-LLM-powered driving behavior analysis using sensor data.
-
 # DriveCoach AI
 
 ### AI-Driven Coaching for Enhanced Road Safety
@@ -7,10 +5,6 @@ LLM-powered driving behavior analysis using sensor data.
 DriveCoach AI is a real-time intelligent driving behavior monitoring platform designed to enhance road safety through AI-powered coaching insights. The system analyzes driving trip segments, classifies behavioral severity levels, and generates actionable recommendations using a Large Language Model (LLM).
 
 The platform supports role-based access for Drivers and Coaches, enabling structured performance monitoring, real-time corrective feedback, and long-term behavioral improvement.
-
-
-
-
 
 
 
@@ -22,24 +16,13 @@ DriveCoach AI integrates:
 * Segment-level behavioral analysis
 * Automated severity classification
 * AI-generated coaching recommendations
-* Thread-safe background processing
 * Role-based dashboards
 
 **Objective:**
 To proactively reduce unsafe driving behavior by delivering real-time corrective feedback to drivers while equipping coaches with structured performance insights.
 
 
-
-
-
-
 ## 2. Key Features
-
-### Authentication and Role Management
-
-* Secure login workflow
-* Role-based dashboard routing (Driver / Coach)
-* Centralized session state management
 
 ### Driver Dashboard
 
@@ -48,7 +31,6 @@ To proactively reduce unsafe driving behavior by delivering real-time corrective
 * Automatic severity detection
 * AI-generated coaching feedback per segment
 * Audio and visual alerts for high-risk behavior
-* Background LLM pre-fetching for seamless transitions
 
 ### Coach Dashboard
 
@@ -62,39 +44,29 @@ To proactively reduce unsafe driving behavior by delivering real-time corrective
 * Segment-wise summary generation
 * Context-aware coaching recommendations
 * Severity-adaptive response tuning
-* Non-blocking threaded execution
-* Lock-based concurrency control
 
 
+## 3. How It Works
 
+1. **Sensor Data Processing**  
+   - Inputs: location (speed/position), accelerometer (forces), gyroscope (rotations)  
+   - Extracts: avg/max speed, harsh brakes/accel counts, sharp corners, bumps, jerk, yaw variance  
+   - Processes full trips (daily drives) for natural context
 
-## 3. Technical Design Considerations
+2. **Seed & Scaled Data Creation**  
+   - Rule-based grading → 1,770 high-quality seed pairs  
+   - Self-instruct generation (larger LLM) → diverse scenarios  
+   - Augmentation (paraphrasing + safe perturbation) → ~7,080 robust examples
 
-### Concurrency Handling
+3. **Fine-Tuning**  
+   - Base model: Llama-3.2-1B-Instruct  
+   - Low Rank Adaptation (r=64)
+   - 4-bit/ 5-bit quantization    
 
-* Non-blocking lock mechanism ensures controlled LLM access
-* try/finally pattern guarantees lock release
-* Daemon threads prevent UI freezing
-
-### State Management
-
-* UI-level state handled via global_State
-* Critical results stored in module-level dictionaries to prevent state duplication
-* Global session state maintained for authenticated users
-
-### Alert System
-
-High and critical severity levels trigger:
-
-* Programmatic audio alerts using Web Audio API
-* Temporary floating visual notifications
-* Automatic dismissal for non-intrusive user experience
-
-### Performance Optimization
-
-* LLM initialized once at application startup
-* Segment lookahead pre-fetching
-* Background processing for improved responsiveness
+4. **Optimization & Interface**  
+   - Merge LoRA → convert to GGUF (F16) with llama.cpp  
+   - Gradio UI with driver/fleet logins
+   - Auto-query on driver side 
 
 
 
@@ -171,11 +143,3 @@ driving-coach-app/
             └── ...
 ```
 
-## Requirements:
-Python 3.10+
-
-pip (pip install -r requirements.txt)
-
-8GB+ RAM recommended
-
-Local GGUF model (not included) - https://www.kaggle.com/datasets/amudhans07/finetuning-toolkit
