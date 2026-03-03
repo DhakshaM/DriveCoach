@@ -7,11 +7,11 @@ def reset_login_fields():
         gr.update(visible=True),   # login_col
         gr.update(visible=False),  # driver_col
         gr.update(visible=False),  # coach_col
-        0,                          # driver_refresh_state
-        0,                          # coach_refresh_state
-        "",                         # username_box
-        "",                         # password_box
-        None                        # error_box
+        0,                         # driver_refresh_state
+        0,                         # coach_refresh_state
+        "",                        # username_box
+        "",                        # password_box
+        None                       # error_box
     )
 
 
