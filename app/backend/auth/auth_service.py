@@ -1,7 +1,6 @@
 import csv
 import bcrypt
 from pathlib import Path
-# At the top of auth_service.py, add:
 from backend.db.db_writer import log_user
 
 USER_FILE = Path("data/users.csv")

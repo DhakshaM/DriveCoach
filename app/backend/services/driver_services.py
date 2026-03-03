@@ -7,9 +7,6 @@ _registry = TripRegistry(DATA_ROOT)
 
 
 def list_trips(driver_id: str):
-    """
-    Return list of trip IDs for a driver
-    """
     driver_dir = DATA_ROOT / driver_id
     print("Looking for trips in:", driver_dir.resolve())
     print("Exists:", driver_dir.exists())
@@ -26,9 +23,7 @@ def list_trips(driver_id: str):
 
 
 def analyze_trip(driver_id: str, trip_id: str):
-    """
-    Run full pipeline for ONE trip
-    """
+
     print(f">>> DRIVER SERVICE: analyzing {driver_id}/{trip_id}")
 
     results = _registry.process_trip(driver_id, trip_id)
@@ -39,7 +34,7 @@ def analyze_trip(driver_id: str, trip_id: str):
             "message": "No valid trip data"
         }
 
-    r = results[0]  # we already enforce single segment
+    r = results[0]  
 
     return {
         "status": "ok",

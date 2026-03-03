@@ -89,7 +89,6 @@ def build_coach_view():
         with trip_df_lock:
             trip_df_state = None
 
-        # 🔥 start background load
         t = threading.Thread(
             target=load_trip_df_background,
             args=(driver_id, trip_id),
@@ -123,7 +122,6 @@ def build_coach_view():
         time.sleep(1)
         if not driver_id or not trip_id or segment_idx is None: 
             return gr.update(value="<h3>Trip Severity</h3><p> Please select a trip.</p>")  
-        # Wait until DF is ready (very briefly)
         for _ in range(50):  # ~0.5s max
             with trip_df_lock:
                 if trip_df_state is not None:
@@ -151,14 +149,14 @@ def build_coach_view():
             trip_df_state = None
 
         return (
-            gr.update(choices=list_drivers(), value=None),   # driver_dd
-            gr.update(choices=[], value=None),   # trip_dd
-            gr.update(choices=[], value=None),   # segment_dd
-            gr.update(value="Select a driver to view details."),  # driver_status_box
-            gr.update(value="<h3>Severity</h3>"),                 # segment_severity_box
+            gr.update(choices=list_drivers(), value=None),   
+            gr.update(choices=[], value=None),   
+            gr.update(choices=[], value=None),   
+            gr.update(value="Select a driver to view details."),  
+            gr.update(value="<h3>Severity</h3>"),                 
             gr.update(
                 value="### Driving Behaviour Feedback\nSelect trip, then click 'Analyze Trip'"
-            )                                    # output_box
+            )                                   
         )
 
     driver_dd.change(

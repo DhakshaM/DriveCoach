@@ -1,11 +1,9 @@
-# backend/processing/merger.py
 
 import pandas as pd
 import numpy as np
 from scipy.signal import find_peaks
 from datetime import timedelta
 
-# ================= CONFIG =================
 
 WINDOW_SECONDS = 30
 IMU_HZ = 25
@@ -17,9 +15,7 @@ LATERAL_G_THRESH = 0.35
 YAW_RATE_THRESH = 0.3
 BUMP_G_THRESH = 0.3
 
-DEBUG = False  # turn ON when debugging
-
-# ==========================================
+DEBUG = False  
 
 
 def _log(msg):
@@ -40,26 +36,16 @@ def _load_csv(path, index_col="timestamp"):
 
 
 def merge_sensor_csvs(location_csv, accel_csv, gyro_csv, max_segments=None):
-    """
-    Merge GPS + IMU sensor CSVs into windowed feature dataframe.
-
-    Returns:
-        pd.DataFrame where each row corresponds to a WINDOW_SECONDS segment.
-    """
-
-    # ---------- Load ----------
     location_df = _load_csv(location_csv)
     accel_df = _load_csv(accel_csv)
     gyro_df = _load_csv(gyro_csv)
 
-    # ---------- Validation ----------
     if location_df.empty or accel_df.empty or gyro_df.empty:
         raise ValueError("One or more sensor CSVs are empty")
 
     timestamps = location_df.index
     features = []
 
-    # ---------- Windowed feature extraction ----------
     for start_time in timestamps:
         end_time = start_time + timedelta(seconds=WINDOW_SECONDS)
         if end_time > timestamps[-1]:
@@ -68,22 +54,17 @@ def merge_sensor_csvs(location_csv, accel_csv, gyro_csv, max_segments=None):
         accel_win = accel_df[start_time:end_time]
         gyro_win = gyro_df[start_time:end_time]
         loc_win = location_df[start_time:end_time]
-
-        # Require sufficient IMU coverage
         min_samples = 0.7 * WINDOW_SECONDS * IMU_HZ
         if len(accel_win) < min_samples:
             _log(f"Skipping window @ {start_time} (insufficient IMU)")
             continue
 
         feat = {}
-
-        # ---------- Speed ----------
         speeds = loc_win["speed"].dropna()
         feat["avg_speed_kmh"] = round(speeds.mean() * 3.6, 1) if len(speeds) else 0.0
         feat["max_speed_kmh"] = round(speeds.max() * 3.6, 1) if len(speeds) else 0.0
         feat["speed_variance"] = round(speeds.var(), 2) if len(speeds) > 1 else 0.0
 
-        # ---------- Longitudinal events ----------
         ay = accel_win["accelerationY"]
         feat["harsh_brake_count"] = int((ay < HARSH_BRAKE_G).sum())
         feat["harsh_accel_count"] = int((ay > HARSH_ACCEL_G).sum())

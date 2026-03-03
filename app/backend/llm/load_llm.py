@@ -18,7 +18,7 @@ def load_llm_once():
     print(f">>> Loading LLM from: {MODEL_PATH}")
 
     llm = Llama(
-        model_path=MODEL_PATH,   # ✅ USE ENV VARIABLE
+        model_path=MODEL_PATH, 
         n_ctx=4096,
         n_threads=8,
         chat_format=None,

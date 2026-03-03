@@ -7,9 +7,6 @@ _registry = TripRegistry(DATA_ROOT)
 
 
 def get_driver_status(driver_id: str):
-    """
-    Return status info for a selected driver.
-    """
     driver_dir = DATA_ROOT / driver_id
     if not driver_dir.exists():
         return None

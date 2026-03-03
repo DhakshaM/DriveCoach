@@ -1,10 +1,3 @@
-# backend/processing/severity.py
-
-"""
-IMPORTANT:
-This file MUST emit the exact textual format used during LLM training.
-Do NOT change wording, bullet style, or units unless you re-train the model.
-"""
 
 DEBUG = False
 
@@ -15,10 +8,6 @@ def _log(msg):
 
 
 def build_llm_summary(feature_row: dict) -> str:
-    """
-    Builds the EXACT summary string format used for LLM coaching.
-    This is the ONLY string passed to the LLM.
-    """
 
     avg_speed = round(feature_row.get("avg_speed_kmh", 0.0), 1)
     max_speed = round(feature_row.get("max_speed_kmh", 0.0), 1)
@@ -45,10 +34,6 @@ def build_llm_summary(feature_row: dict) -> str:
 
 
 def assign_severity(feature_row: dict) -> str:
-    """
-    Optional helper for UI coloring / aggregation.
-    NOT used for LLM prompting.
-    """
 
     score = 0
 

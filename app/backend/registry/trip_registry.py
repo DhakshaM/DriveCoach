@@ -1,4 +1,3 @@
-# backend/registry/trip_registry.py
 
 from pathlib import Path
 import pandas as pd
@@ -6,23 +5,12 @@ import pandas as pd
 from backend.processing.merger import merge_sensor_csvs
 from backend.processing.severity import build_llm_summary, assign_severity
 from backend.llm.llm_engine import get_coaching_feedback
-# from backend.llm.llm_engine import is_initialized
-
-# if not is_initialized():
-#     raise RuntimeError("LLM not initialized at app startup")
 MAX_SEGMENTS = 15
 
 class TripRegistry:
-    """
-    Central access point for trip-level operations.
-    """
 
     def __init__(self, data_root: Path):
         self.data_root = Path(data_root)
-
-    # --------------------------------------------------
-    # Discovery
-    # --------------------------------------------------
 
     def list_drivers(self):
         return sorted(
@@ -40,14 +28,8 @@ class TripRegistry:
             if p.is_dir()
         )
 
-    # --------------------------------------------------
-    # Core pipeline
-    # --------------------------------------------------
 
     def process_trip(self, driver_id: str, trip_id: str):
-        """
-        Legacy pipeline: analyze FIRST segment only.
-        """
         segments = self.list_segments(driver_id, trip_id)
 
         if not segments:
@@ -56,16 +38,7 @@ class TripRegistry:
         first_idx = segments[0]
         return [self.process_trip_segment(driver_id, trip_id, first_idx)]
 
-            
-
-    # --------------------------------------------------
-    # Debug helpers
-    # --------------------------------------------------
-
     def debug_trip(self, driver_id: str, trip_id: str, n=1):
-        """
-        Runs first n windows without calling the LLM.
-        """
 
         from backend.llm import llm_engine
         old_stub = llm_engine.USE_STUB
@@ -78,12 +51,9 @@ class TripRegistry:
             llm_engine.USE_STUB = old_stub
 
     def list_segments(self, driver_id: str, trip_id: str) -> int:
-        """
-        Return number of segments for a trip.
-        """
+
         df = self._load_trip_df(driver_id, trip_id)
 
-        # each row == one 30s window
         return list(df.index)
 
     def process_trip_segment(self, driver_id: str, trip_id: str, idx: int):
@@ -109,10 +79,7 @@ class TripRegistry:
         }
     
     def _load_trip_df(self, driver_id: str, trip_id: str):
-        """
-        Load and merge sensor CSVs into a dataframe.
-        Each row corresponds to one 30s segment.
-        """
+
         trip_dir = self.data_root / driver_id / trip_id
 
         if not trip_dir.exists():
@@ -126,15 +93,12 @@ class TripRegistry:
             if not f.exists():
                 raise FileNotFoundError(f"Missing file: {f.name}")
 
-        # 🔑 single source of truth for segmentation
         df = merge_sensor_csvs(loc, acc, gyro, max_segments=MAX_SEGMENTS)
 
         return df
 
     def list_segment_severities(self, driver_id: str, trip_id: str):
-        """
-        Returns severity per segment without calling the LLM.
-        """
+
         df = self._load_trip_df(driver_id, trip_id)
 
         results = []

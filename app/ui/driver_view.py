@@ -12,11 +12,10 @@ TRIPS_ROOT = Path("data/trips")
 _registry = TripRegistry(TRIPS_ROOT)
 MAX_SEGMENTS = 15
 _llm_lock = threading.Lock() 
-_segment_results = {}  # keyed by (driver_id, trip_id, idx) — never goes through gr.State
+_segment_results = {}  
 
-ALERT_SEVERITIES = {"high", "critical"}  # adjust to match your labels
+ALERT_SEVERITIES = {"high", "critical"}  
 
-# ── CHANGED: Added severity parameter + non-blocking lock + try/finally
 def start_llm_for_segment(idx, summaries, llm_result_holder, severity, driver_id=None, trip_id=None, segments=None):
     def _run():
         if not _llm_lock.acquire(blocking=False):
@@ -28,25 +27,22 @@ def start_llm_for_segment(idx, summaries, llm_result_holder, severity, driver_id
             coaching = get_coaching_feedback(summary, severity, False)
             llm_result_holder["result"] = coaching
 
-            # Also store in module-level dict — immune to gr.State copying
             if driver_id and trip_id:
                 _segment_results[(driver_id, trip_id, idx)] = coaching
 
             if driver_id and trip_id and segments and idx < len(segments):
                 try:
-                    # severity is now passed in, but we still log the same one for consistency
                     log_driver_response(
                         driver_id=driver_id,
                         trip_id=trip_id,
                         segment_index=int(idx),
-                        severity=severity,           # ← using passed severity
+                        severity=severity,          
                         summary=summary,
                         coaching=coaching,
                     )
                 except Exception as e:
                     print(f"[DB_WRITER] log_driver_response error (non-fatal): {e}")
         finally:
-            # ALWAYS release the lock so future threads can run
             _llm_lock.release()
 
     t = threading.Thread(target=_run, daemon=True)
@@ -105,7 +101,6 @@ def build_driver_view():
         if not segments:
             return [], 0, None, None, gr.update(choices=["Waiting for stream..."], value="Waiting for stream..."), gr.update(value="<h3>Driving Behaviour Feedback</h3><p>❌ No Trips</p>"), False, None, None, None
 
-        # ── NEW: show "Processing" state immediately ──
         processing_label = "Segment 1 — Processing feedback..."
         dropdown_update = gr.update(choices=[processing_label], value=processing_label)
 
@@ -150,32 +145,31 @@ def build_driver_view():
         )
 
 
-        # ── CHANGED: pass severity to first segment
         holder = {"result": None}
         first_severity = segments[0]["severity"] if segments else None
         start_llm_for_segment(0, summaries, holder, first_severity, driver_id=driver_id, trip_id=trip_id, segments=segments)
 
         return (
-            segments,            # segment_stream_state
-            0,                   # segment_pointer_state
-            trip_id,             # current_trip_state
-            dropdown_update,     # segment_dropdown
-            feedback_update,     # output_box
-            True,                # streaming_state
-            df,                  # trip_df_state
-            summaries,           # segment_summaries_state
-            0,                   # next_llm_idx_state
-            holder               # next_llm_result_state
+            segments,            
+            0,                   
+            trip_id,            
+            dropdown_update,     
+            feedback_update,     
+            True,                
+            df,                  
+            summaries,           
+            0,                  
+            holder               
         )
 
     def stop_streaming():
         return (
-            [],                  # segment_stream_state
-            0,                   # segment_pointer_state
-            None,                # current_trip_state
-            gr.update(choices=["Waiting for stream..."], value="Waiting for stream..."),  # segment_dropdown
-            gr.update(value="<h3>Driving Behaviour Feedback</h3>"),  # output_box
-            False,                # streaming_state (stop streaming)
+            [],                
+            0,                  
+            None,               
+            gr.update(choices=["Waiting for stream..."], value="Waiting for stream..."),  
+            gr.update(value="<h3>Driving Behaviour Feedback</h3>"),  
+            False,                
             None
         )
 
@@ -187,7 +181,6 @@ def build_driver_view():
         driver_id = global_state.current_user_id
         key = (driver_id, trip_id, idx) if driver_id and trip_id else None
 
-        # ── Result for CURRENT segment is ready ──
         if key and key in _segment_results:
             severity = segments[idx]["severity"]
             full_label = f"Segment {idx + 1} — Severity: {severity}"
@@ -198,7 +191,6 @@ def build_driver_view():
                 notification_script = f"""
                 <img src="x" style="display:none" onerror="
                     (function() {{
-                        // --- Sound (programmatic beep, no file needed) ---
                         try {{
                             const ctx = new (window.AudioContext || window.webkitAudioContext)();
                             const osc = ctx.createOscillator();
@@ -219,7 +211,7 @@ def build_driver_view():
 
                         const banner = document.createElement('div');
                         banner.id = 'severity-alert-banner';
-                        banner.innerHTML = '⚠️ HIGH SEVERITY DETECTED — Segment {idx + 1}: {severity}';
+                        banner.innerHTML = '⚠️ HIGH SEVERITY DETECTED — Segment {idx + 1}';
                         banner.style.cssText = `
                             position: fixed;
                             top: 20px;
@@ -236,7 +228,6 @@ def build_driver_view():
                             animation: fadeout 4s forwards;
                         `;
 
-                        // Auto-dismiss after 4 seconds
                         document.body.appendChild(banner);
                         setTimeout(() => banner.remove(), 4000);
                     }})();
@@ -249,10 +240,8 @@ def build_driver_view():
                 + notification_script
             )
 
-            # Move forward
             next_idx = min(idx + 1, len(segments) - 1)
 
-            # ── CHANGED: pass severity when pre-fetching next segment
             next_key = (driver_id, trip_id, next_idx)
             if next_idx != idx and next_key not in _segment_results:
                 holder = {"result": None}
@@ -262,52 +251,43 @@ def build_driver_view():
                     driver_id=driver_id, trip_id=trip_id, segments=segments
                 )
                 next_llm_idx = next_idx
-                next_llm_result = holder  # store HOLDER, not result
+                next_llm_result = holder 
 
-            # Update BOTH label and feedback together → cohesive step
             return (
                 next_idx,
                 gr.update(choices=[full_label], value=full_label),
                 gr.update(value=feedback_html),
-                next_llm_idx,               # updated
+                next_llm_idx,               
                 next_llm_result             # updated
             )
 
-        # ── Still waiting for current segment ──
         else:
-
-
-            # Do NOT change label or feedback yet → keeps previous segment visible
-            # But make sure LLM for current is running
             if key and next_llm_idx != idx:
                 holder = {"result": None}
-                # Note: we don't pass severity here because this branch is fallback
-                # and original code didn't have it — keeping safe & minimal
                 start_llm_for_segment(
                     idx, summaries, holder,
                     driver_id=driver_id, trip_id=trip_id, segments=segments
                 )
                 return idx, gr.update(), gr.update(), idx, holder
 
-            # Nothing to do — wait for next tick
             return idx, gr.update(), gr.update(), next_llm_idx, next_llm_result
 
     def reset_driver_view():
         return (
-            [],                                  # segment_stream_state
-            0,                                   # segment_pointer_state
-            None,                                # current_trip_state
+            [],                                 
+            0,                                   
+            None,                                
             gr.update(
                 choices=["Waiting for stream..."],
                 value="Waiting for stream..."
-            ),                                   # segment_dropdown
+            ),                                  
             gr.update(
                 value="<h3>Driving Behaviour Feedback</h3>"
-            ),                                   # output_box
-            False,                               # streaming_state
-            None,                                # trip_df_state
+            ),                                   
+            False,                               
+            None,                               
             None,                                # segment_summaries_state
-            None,                                # next_llm_idx_state
+            None,                                
             None                                 # next_llm_result_state
         )
 
@@ -363,7 +343,7 @@ def build_driver_view():
 
     logout_btn = gr.Button("Logout", elem_classes=["logout-btn"])
 
-    STREAM_INTERVAL_SEC = 10.0  # 🔧 adjust freely
+    STREAM_INTERVAL_SEC = 10.0  #adjust freely
 
     gr.Timer(STREAM_INTERVAL_SEC).tick(
         fn=advance_segment_stream,
@@ -389,83 +369,3 @@ def build_driver_view():
 
     return refresh_state, logout_btn
     
-
-
-
-
-# ================================================================
-# DRIVER DASHBOARD MODULE — COMMENTS / DOCUMENTATION
-# ================================================================
-
-# File Purpose:
-# This module builds the Driver Dashboard UI using Gradio.
-# It streams trip segments in real-time and generates AI-based
-# coaching feedback per segment using an LLM engine.
-
-# Core Workflow:
-# 1. Driver clicks "Start Trip"
-# 2. System loads trip data and segment severities
-# 3. For each segment:
-#       - Build LLM summary
-#       - Call get_coaching_feedback()
-#       - Store result in _segment_results
-# 4. UI auto-advances every STREAM_INTERVAL_SEC seconds
-# 5. High/Critical severity triggers:
-#       - Audio alert (Web Audio API)
-#       - Red warning banner
-# 6. Feedback + metadata logged to DB via log_driver_response()
-
-# Threading & Concurrency:
-# - _llm_lock ensures only one LLM call runs at a time
-# - Non-blocking lock prevents UI freezing
-# - try/finally guarantees lock release
-# - Each LLM call runs in a daemon thread
-
-# State Management:
-# - gr.State used for UI-level state
-# - _segment_results (module-level dict) prevents Gradio state copy issues
-# - Keyed by (driver_id, trip_id, segment_index)
-
-# Alert Logic:
-# ALERT_SEVERITIES = {"high", "critical"}
-# If severity matches:
-#   - Programmatic beep (880 Hz sine wave)
-#   - Temporary red floating banner
-#   - Auto-dismiss after 4 seconds
-
-# Streaming Control:
-# STREAM_INTERVAL_SEC = 10.0
-# Controlled via gr.Timer().tick()
-# Each tick attempts to:
-#   - Display completed segment feedback
-#   - Pre-fetch next segment LLM result
-
-# Important Functions:
-# - start_llm_for_segment()
-#       Handles async LLM call and DB logging
-# - start_streaming()
-#       Initializes trip session
-# - advance_segment_stream()
-#       Moves segment pointer forward
-# - stop_streaming()
-#       Stops trip session
-# - reset_driver_view()
-#       Resets UI and state
-
-# Safety & Fault Tolerance:
-# - Non-fatal DB write errors are caught
-# - Lock always released
-# - Graceful fallback when no trips or no driver ID
-
-# Designed For:
-# DriveCoach AI — AI-Driven Coaching for Enhanced Road Safety
-# Real-time behavioral monitoring with proactive driver alerts
-# ================================================================
-
-
-
-
-
-
-
-

@@ -1,9 +1,3 @@
-# backend/db/db_writer.py
-"""
-Fire-and-forget background DB writer.
-Inserts NEVER block the main pipeline.
-The queue accepts jobs instantly; a daemon thread handles all writes.
-"""
 
 import queue
 import threading
@@ -25,23 +19,19 @@ _started = False
 _lock = threading.Lock()
 
 
-# ─── Internal worker ────────────────────────────────────────────────────────
-
 def _worker():
-    """Runs in a daemon thread. Pulls jobs from queue and executes them."""
     import mysql.connector
 
     conn = None
 
     while True:
-        job = _job_queue.get()          # blocks until a job arrives
-        if job is None:                 # sentinel: shutdown signal
+        job = _job_queue.get()        
+        if job is None:                 
             break
 
         sql, params = job
 
         try:
-            # Reconnect if needed
             if conn is None or not conn.is_connected():
                 conn = mysql.connector.connect(**_DB_CONFIG)
 
@@ -58,7 +48,6 @@ def _worker():
 
 
 def _ensure_started():
-    """Start the background thread once, lazily."""
     global _started
     with _lock:
         if not _started:
@@ -67,13 +56,7 @@ def _ensure_started():
             _started = True
 
 
-# ─── Public API ──────────────────────────────────────────────────────────────
-
 def log_user(user_id: str, role: str):
-    """
-    Insert or ignore a user record.
-    Non-blocking — returns immediately.
-    """
     _ensure_started()
     sql = """
         INSERT IGNORE INTO users (user_id, role)
@@ -90,10 +73,6 @@ def log_driver_response(
     summary: str,
     coaching: str,
 ):
-    """
-    Queue a driver coaching response for DB insertion.
-    Non-blocking — returns immediately.
-    """
     _ensure_started()
 
     
